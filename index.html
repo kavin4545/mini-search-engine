@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Mini Search Engine - DSA</title>
+<style>
+body{font-family:Arial;margin:0;background:#f4f7fb;color:#172033}header{background:#002b49;color:#fff;padding:22px}main{max-width:1000px;margin:auto;padding:18px}
+nav{display:flex;flex-wrap:wrap;gap:8px;margin-bottom:16px}button{padding:10px 14px;border:0;border-radius:7px;background:#075985;color:white;font-weight:bold}
+.card{background:#fff;padding:18px;border-radius:12px;margin-bottom:16px;box-shadow:0 2px 10px #0001}.hidden{display:none}
+input,textarea{width:100%;padding:10px;margin:7px 0 12px;border:1px solid #ccd5df;border-radius:6px;box-sizing:border-box}
+textarea{min-height:90px}table{width:100%;border-collapse:collapse}th,td{padding:10px;border-bottom:1px solid #ddd;text-align:left}th{background:#eef3f7}
+.result{padding:12px;margin:8px 0;background:#f7fbfd;border-left:4px solid #075985}.badge{display:inline-block;background:#e5eef5;padding:4px 8px;border-radius:15px}
+.node{display:inline-block;margin:5px;padding:14px;border-radius:50%;background:#e5eef5;font-weight:bold}
+</style>
+</head>
+<body>
+<header><h1>Mini Search Engine</h1><p>DSA - Priority Scheduling Simulation with Performance Comparison</p></header>
+<main>
+<nav>
+<button onclick="show('search')">Search</button><button onclick="show('docs')">Documents</button>
+<button onclick="show('add')">Add Document</button><button onclick="show('pq')">Priority Queue</button>
+<button onclick="show('perf')">Performance</button>
+</nav>
+
+<section id="search" class="card"><h2>Search Documents</h2>
+<input id="q" placeholder="Try: data, security, network">
+<button onclick="search()">Search</button><div id="results"></div></section>
+
+<section id="docs" class="card hidden"><h2>Documents</h2><div id="docTable"></div></section>
+
+<section id="add" class="card hidden"><h2>Add Document</h2>
+<input id="title" placeholder="Document title"><textarea id="content" placeholder="Document content"></textarea>
+<button onclick="addDoc()">Add Document</button><p id="msg"></p></section>
+
+<section id="pq" class="card hidden"><h2>Priority Queue / Max Heap</h2>
+<p>Highest priority is processed first.</p><button onclick="priority()">Run Demonstration</button><div id="pqout"></div></section>
+
+<section id="perf" class="card hidden"><h2>Performance Comparison</h2>
+<button onclick="performanceTest()">Run Test</button><div id="perfout"></div>
+<p><b>Theoretical complexity:</b><br>Linear traversal: O(n)<br>Max-Heap insertion: O(log n)<br>Highest-priority access: O(1)<br>Max-Heap extraction: O(log n)</p></section>
+
+<section class="card"><h2>Project Flow</h2><p><b>Keyword → Search → Relevance Score → Priority Queue / Max Heap → Ranked Results</b></p></section>
+</main>
+
+<script>
+let docs=[
+{id:1,t:"Data Structures",c:"Data structures organize and manage data. Arrays, linked lists, stacks, queues, trees and heaps are important data structures."},
+{id:2,t:"Database Management",c:"Database management systems store, organize and retrieve data. SQL is used to query database data."},
+{id:3,t:"Cyber Security",c:"Cyber security protects computer systems and data from attacks. Security includes authentication, encryption and safe networks."},
+{id:4,t:"Computer Networks",c:"Computer networks connect computers and devices. Network security protects data while it moves across a network."},
+{id:5,t:"Operating Systems",c:"Operating systems manage computer resources, processes, memory and files."}
+];
+function esc(s){return s.replace(/[&<>"']/g,x=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[x]))}
+function count(s,q){let n=0,i=0;s=s.toLowerCase();q=q.toLowerCase();if(!q)return 0;while((i=s.indexOf(q,i))>=0){n++;i+=q.length}return n}
+function search(){let q=document.getElementById("q").value.trim(),r=docs.map(d=>({d,score:count(d.t,q)+count(d.c,q)})).filter(x=>x.score).sort((a,b)=>b.score-a.score);document.getElementById("results").innerHTML=r.length?("<p><b>"+r.length+" matching document(s) found.</b></p>"+r.map((x,i)=>'<div class="result"><b>Rank '+(i+1)+": "+esc(x.d.t)+"</b> <span class="badge">Score: "+x.score+"</span><p>"+esc(x.d.c)+"</p></div>").join("")):"<p>No matching documents found.</p>"}
+function render(){document.getElementById("docTable").innerHTML="<table><tr><th>ID</th><th>Title</th><th>Content</th></tr>"+docs.map(d=>"<tr><td>"+d.id+"</td><td><b>"+esc(d.t)+"</b></td><td>"+esc(d.c)+"</td></tr>").join("")+"</table>"}
+function addDoc(){let t=title.value.trim(),c=content.value.trim();if(!t||!c){msg.textContent="Enter both title and content.";return}docs.push({id:docs.length+1,t,c});title.value="";content.value="";msg.textContent="Document added successfully.";render()}
+function show(id){document.querySelectorAll("section").forEach(s=>s.classList.add("hidden"));document.getElementById(id).classList.remove("hidden");if(id==="docs")render()}
+function priority(){let a=[{d:1,p:5},{d:2,p:2},{d:3,p:8},{d:4,p:4},{d:5,p:7}].sort((a,b)=>b.p-a.p);pqout.innerHTML='<p class="node">'+a.map(x=>x.p).join('</p><p class="node">')+'</p><table><tr><th>Order</th><th>Document</th><th>Priority</th></tr>'+a.map((x,i)=>"<tr><td>"+(i+1)+"</td><td>Document "+x.d+"</td><td>"+x.p+"</td></tr>").join("")+"</table><p><b>Processing order: 8 → 7 → 5 → 4 → 2</b></p>"}
+function performanceTest(){let ns=[10,50,100,500,1000],rows=ns.map(n=>{let t=performance.now(),s=0;for(let i=0;i<n;i++)s+=i;let l=performance.now()-t;t=performance.now();let h=[];for(let i=0;i<n;i++){h.push(i);let k=h.length-1;while(k>0){let p=Math.floor((k-1)/2);if(h[p]>=h[k])break;[h[p],h[k]]=[h[k],h[p]];k=p}}let hi=performance.now()-t;return [n,l.toFixed(6),hi.toFixed(6)]});perfout.innerHTML="<table><tr><th>Documents</th><th>Linear (ms)</th><th>Heap Insert (ms)</th></tr>"+rows.map(r=>"<tr><td>"+r[0]+"</td><td>"+r[1]+"</td><td>"+r[2]+"</td></tr>").join("")+"</table>"}
+render();
+</script>
+</body></html>
